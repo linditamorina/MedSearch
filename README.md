@@ -1,5 +1,7 @@
 MedSearch 
+
 Description
+
 MedSearch is a mobile application built with React Native designed to help users find detailed 
 information about various medicines using the official FDA API. The app also features real-time 
 health news and a modern interface with multi-language support and Dark Mode.
