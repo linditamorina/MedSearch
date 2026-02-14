@@ -1,50 +1,53 @@
-MedSearch 
+# 🏥 MedSearch - Your Personal Pharmacy Guide
 
-Description
+**MedSearch** is a modern mobile application built with **React Native** and **Supabase**. It is designed to help users search for medications, access detailed medical information, and manage their personal medication schedules efficiently.
 
-MedSearch is a mobile application built with React Native designed to help users find detailed 
-information about various medicines using the official FDA API. The app also features real-time 
-health news and a modern interface with multi-language support and Dark Mode.
+---
 
-Key Features
+## ✨ Key Features
 
-🔍 Medicine Search: Instant information retrieved from the FDA database.
+* **🔍 Advanced Search:** Real-time medication search powered by the official **OpenFDA API**.
+* **📋 Schedule Management:** Add medications to a personal schedule and track them with visual "In Plan" badges directly in search results.
+* **❤️ Favorites List:** Save frequently used medications for quick access and better management.
+* **📰 Health News:** Stay updated with the latest health-related news and articles in real-time.
+* **🌍 Multi-Language Support:** Full support for **English** and **Albanian**, including automatic translation of complex medical data like dosage and indications.
+* **🌙 Dark Mode:** Seamless support for both Light and Dark themes to provide a comfortable user experience.
 
-📰 Health News: Latest health articles with a shuffle/refresh feature.
+---
 
-🌓 Dark Mode: Seamless theme switching for better user experience.
+## 🛠 Tech Stack
 
-🌍 Multilingual: Full support for both Albanian and English languages.
+* **Frontend:** [React Native](https://reactnative.dev/) (Expo)
+* **Backend/Database:** [Supabase](https://supabase.com/)
+* **Medical API:** [OpenFDA API](https://open.fda.gov/apis/drug/label/)
+* **News API:** NewsData.io
+* **Translation:** Google Translate API Integration
+* **Icons:** Ionicons & MaterialCommunityIcons
 
-⭐ Favorites: Save medicines for quick offline access.
+---
 
-Tech Stack
+## 🚀 Getting Started (Installation)
 
-Framework: React Native (Expo)
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/username/MedSearch.git](https://github.com/username/MedSearch.git)
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Configure Supabase:**
+    Add your Supabase credentials to the `src/lib/supabase.js` configuration file.
 
-Navigation: React Navigation
+4.  **Run the application:**
+    ```bash
+    npx expo start
+    ```
 
-State Management: Context API
+---
 
-APIs: OpenFDA API (Drug Data) & NewsData.io (Health News)
+## 📄 License
+This project was created for educational purposes and personal medication management.
 
-Installation
-
-Clone the repository:
-
-Bash
-
-git clone https://github.com/linditamorina/MedSearch.git
-
-Install dependencies:
-
-Bash
-
-npm install
-Run the project:
-
-Bash
-npx expo start
-
-License
-This project is open-source and available under the MIT License.
+---
+**Developed by Lindita**
