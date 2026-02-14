@@ -5,6 +5,7 @@ const translations = {
     home: "Kërko", 
     favorites: "Të preferuarat", 
     profile: "Profili",
+    plan: "Plani", // Emri i Tab-it të ri
     search_placeholder: "Kërko barna...", 
     details: "Detajet",
     read_more: "Lexo më shumë", 
@@ -21,14 +22,27 @@ const translations = {
     welcome: "Mirësevini,", 
     suggestions: "Sugjerimet", 
     version: "Versioni",
-    // SHTESA E RE KËTU:
     health_news: "Lajmet e Shëndetit",
-    results: "Rezultatet"
+    results: "Rezultatet",
+
+    // SHTESAT PËR PLANIN DHE ORARET
+    select_days: "Zgjidh ditët",
+    set_schedule: "Cakto Orarin",
+    remaining: "mbetur",
+    empty_plan: "Nuk keni asnjë orar të caktuar.",
+    confirm_delete: "Konfirmo Fshirjen",
+    delete_msg: "A dëshironi ta fshini orarin për",
+    cancel: "Anulo",
+    delete: "Fshije",
+    success: "Sukses",
+    updated_msg: "Orari u përditësua me sukses!",
+    plan_saved: "Orari u ruajt"
   },
   en: {
     home: "Search", 
     favorites: "Favorites", 
     profile: "Profile",
+    plan: "Plan",
     search_placeholder: "Search medicines...", 
     details: "Details",
     read_more: "Read more", 
@@ -45,9 +59,21 @@ const translations = {
     welcome: "Welcome,", 
     suggestions: "Suggestions", 
     version: "Version",
-    // SHTESA E RE KËTU:
     health_news: "Health News",
-    results: "Results"
+    results: "Results",
+
+    // SHTESAT PËR PLANIN DHE ORARET
+    select_days: "Select days",
+    set_schedule: "Set Schedule",
+    remaining: "remaining",
+    empty_plan: "No schedules set yet.",
+    confirm_delete: "Confirm Delete",
+    delete_msg: "Are you sure you want to delete the schedule for",
+    cancel: "Cancel",
+    delete: "Delete",
+    success: "Success",
+    updated_msg: "Schedule updated successfully!",
+    plan_saved: "Schedule saved"
   }
 };
 
@@ -56,7 +82,6 @@ const LanguageContext = createContext();
 export const LanguageProvider = ({ children }) => {
   const [locale, setLocale] = useState('al');
   
-  // Funksioni t kërkon çelësin, nëse nuk e gjen kthen vetë emrin e çelësit
   const t = (key) => {
     if (translations[locale] && translations[locale][key]) {
       return translations[locale][key];

@@ -1,149 +1,144 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, SafeAreaView, StatusBar, Platform } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { 
+  StyleSheet, View, Text, FlatList, TouchableOpacity, 
+  StatusBar, ActivityIndicator 
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabase';
 
 const ACCENT_COLORS = ['#e74c3c', '#2bc0d1', '#2ecc71', '#3498db', '#f1c40f'];
 
-export default function FavoritesScreen({ navigation }) {
+export default function FavoriteScreen({ navigation }) {
   const theme = useTheme();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [favorites, setFavorites] = useState([]);
+  const [existingMeds, setExistingMeds] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchFavorites = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase.from('favorites').select('*').eq('user_id', user.id);
-      setFavorites(data || []);
-    }
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: favData } = await supabase.from('favorites').select('*').eq('user_id', user.id);
+        const { data: planData } = await supabase.from('medication_schedules').select('drug_name').eq('user_id', user.id);
+
+        setFavorites(favData || []);
+        if (planData) {
+          setExistingMeds(planData.map(m => m.drug_name.trim().toLowerCase()));
+        }
+      }
+    } catch (e) { console.log(e); } finally { setLoading(false); }
   };
 
-  useFocusEffect(useCallback(() => { fetchFavorites(); }, []));
+  useFocusEffect(useCallback(() => { fetchData(); }, []));
+
+  const renderItem = ({ item, index }) => {
+    const accentColor = ACCENT_COLORS[index % ACCENT_COLORS.length];
+    const drugData = item.drug_data;
+    const brandName = drugData.openfda?.brand_name?.[0] || t('unknown');
+    const genericName = drugData.openfda?.generic_name?.[0] || "";
+    const isAlreadyInPlan = existingMeds.includes(brandName.trim().toLowerCase());
+
+    return (
+      <TouchableOpacity 
+        style={[styles.card, { borderLeftColor: isAlreadyInPlan ? '#2ecc71' : accentColor, backgroundColor: theme.card }]}
+        onPress={() => navigation.navigate('Details', { item: drugData })}
+      >
+        <View style={styles.cardInner}>
+          <View style={[styles.cardIcon, { backgroundColor: accentColor + '15' }]}>
+            <Ionicons name="heart" size={24} color={accentColor} />
+          </View>
+
+          <View style={styles.textContainer}>
+            <View style={styles.titleRow}>
+              <Text style={[styles.brandText, { color: theme.text }]} numberOfLines={1}>
+                {brandName}
+              </Text>
+              {isAlreadyInPlan && (
+                <View style={styles.planBadge}>
+                  <Text style={styles.planBadgeText}>{locale === 'al' ? 'Në plan' : 'In plan'}</Text>
+                </View>
+              )}
+            </View>
+            <Text style={{ color: theme.subText, fontSize: 13 }} numberOfLines={1}>
+              {genericName}
+            </Text>
+          </View>
+
+          <Ionicons name="chevron-forward" size={18} color={theme.subText} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <StatusBar barStyle={theme.isDarkMode ? "light-content" : "dark-content"} />
       
-      {/* HEADER I RREGULLUAR - NJEJTE SI HOME DHE PROFILE */}
+      {/* HEADER I RREGULLUAR ME IKONË */}
       <View style={styles.header}>
-        <Text style={[styles.appName, { color: theme.text }]}>{t('favorites')}</Text>
-        <View style={[styles.headerIconCircle, { backgroundColor: theme.card }]}>
-          <Ionicons name="heart" size={24} color="#e74c3c" />
+        <Text style={[styles.title, { color: theme.text }]}>{t('favorites')}</Text>
+        <View style={styles.logoContainer}>
+            <Ionicons name="heart" size={28} color="#e74c3c" />
         </View>
       </View>
 
-      <FlatList
-        data={favorites}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, index }) => {
-          const accentColor = ACCENT_COLORS[index % ACCENT_COLORS.length];
-          const drug = item.drug_data;
-          return (
-            <TouchableOpacity 
-              style={[styles.card, { borderLeftColor: accentColor, backgroundColor: theme.card }]} 
-              onPress={() => navigation.navigate('Details', { medicine: drug })}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cardInner}>
-                <View style={[styles.cardIcon, { backgroundColor: accentColor + '15' }]}>
-                  <Ionicons name="heart" size={24} color={accentColor} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.brandText, { color: theme.text }]}>
-                    {drug?.openfda?.brand_name?.[0] || t('unknown')}
-                  </Text>
-                  <Text style={{ color: accentColor, fontSize: 13, fontWeight: '600' }}>
-                    {drug?.openfda?.generic_name?.[0]}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={theme.subText} />
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="heart-dislike-outline" size={80} color={theme.subText} style={{ opacity: 0.3 }} />
-            <Text style={[styles.emptyText, { color: theme.subText }]}>{t('empty_fav')}</Text>
-          </View>
-        }
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#3498db" />
+        </View>
+      ) : favorites.length === 0 ? (
+        <View style={styles.center}>
+          <Ionicons name="heart-outline" size={60} color={theme.subText} />
+          <Text style={[styles.emptyText, { color: theme.subText }]}>{t('no_favorites')}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={favorites}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30 }}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0 
-  },
+  container: { flex: 1 },
   header: { 
     paddingHorizontal: 25, 
-    paddingTop: 20, // Distanca e njejte lart
-    marginBottom: 20, 
+    marginVertical: 15, 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center' 
   },
-  appName: { 
-    fontSize: 32, 
-    fontWeight: 'bold',
-    letterSpacing: -0.5
+  logoContainer: { 
+    backgroundColor: '#e74c3c15', 
+    padding: 10, 
+    borderRadius: 50 
   },
-  headerIconCircle: { 
-    width: 45, 
-    height: 45, 
-    borderRadius: 22.5, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5
+  title: { fontSize: 32, fontWeight: 'bold' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 },
+  emptyText: { marginTop: 15, fontSize: 16 },
+  card: { borderRadius: 20, marginBottom: 12, borderLeftWidth: 6, elevation: 2 },
+  cardInner: { flexDirection: 'row', alignItems: 'center', padding: 16 },
+  cardIcon: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+  textContainer: { flex: 1, marginRight: 5, justifyContent: 'center' },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  brandText: { fontSize: 17, fontWeight: 'bold', flexShrink: 1 },
+  planBadge: { 
+    backgroundColor: '#2ecc71', 
+    paddingHorizontal: 6, 
+    paddingVertical: 2, 
+    borderRadius: 6, 
+    marginLeft: 8,
+    justifyContent: 'center'
   },
-  listContent: { 
-    paddingHorizontal: 20, 
-    paddingBottom: 100 
-  },
-  card: { 
-    borderRadius: 20, 
-    marginBottom: 12, 
-    borderLeftWidth: 6, 
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10
-  },
-  cardInner: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    padding: 16 
-  },
-  cardIcon: { 
-    width: 50, 
-    height: 50, 
-    borderRadius: 15, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    marginRight: 15 
-  },
-  brandText: { 
-    fontSize: 18, 
-    fontWeight: 'bold' 
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    marginTop: 100
-  },
-  emptyText: { 
-    textAlign: 'center', 
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: '500'
-  }
+  planBadgeText: { color: 'white', fontSize: 9, fontWeight: 'bold' }
 });
